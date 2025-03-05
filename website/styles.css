@@ -1,23 +1,13 @@
 body {
-    background-color: grey;
+  background-color: grey;
+  display: flex;
+  flex-direction: row;
+  padding: 0px;
 }
 
-#threat-section {
-    display: flexbox;
-    flex-direction: row;
-    background-color: darkgrey;
-    height: 50%;
-    width: 100%;
-}
-
-#threats {
-    background-color: tomato;
-    height: 45%;
-    width: 45%;
-}
-
-#pie-chart {
-    background-color: darkcyan;
-    height: 45%;
-    width: 45%;
+.side-panel {
+  display: flex;
+  margin: 0px;
+  height: 100vh;
+  flex: 1;
 }
