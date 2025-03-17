@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeuralNIDS Dashboard</title>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Leaflet -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      margin-top: 20px;
+    }
+    /* 2x2 grid:
+         +----------------+----------------+
+         |   .threats    | .chart-container|
+         +----------------+----------------+
+         |     .stats    |  .map-container |
+         +----------------+----------------+
+    */
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 20px;
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+    /* Threats in top-left */
+    .threats {
+      grid-column: 1;
+      grid-row: 1;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+    .threats table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    .threats th, .threats td {
+      border: 1px solid black;
+      padding: 8px;
+      text-align: left;
+    }
+    /* Chart in top-right */
+    .chart-container {
+      grid-column: 2;
+      grid-row: 1;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .chart-container canvas {
+      width: 300px;
+      height: 300px;
+    }
+    /* Stats in bottom-left */
+    .stats {
+      grid-column: 1;
+      grid-row: 2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      padding: 20px;
+    }
+    /* Larger stat boxes with label and number on separate lines */
+    .stats div {
+      width: 180px;
+      height: 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease;
+    }
+    .stats div:hover {
+      transform: scale(1.1);
+    }
+    /* Styling for the label (smaller text) */
+    .stat-label {
+      font-size: 22px;
+      color: white;
+    }
+    /* Styling for the number (larger text) */
+    .stat-number {
+      font-size: 60px;
+      font-weight: bold;
+      color: white;
+    }
+    /* Colors remain the same */
+    .alert-box { background-color: red; }
+    .critical-box { background-color: darkred; }
+    .warning-box { background-color: orange; }
+    /* Map in bottom-right */
+    .map-container {
+      grid-column: 2;
+      grid-row: 2;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+    #map {
+      width: 100%;
+      height: 350px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>NeuralNIDS Web Interface</h1>
+  <div class="dashboard">
+    <!-- Threats (Top-Left) -->
+    <div class="threats">
+      <h2>Threats</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Type</th>
+            <th>Danger</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody id="threat-table">
+          <tr><td>00:00:00</td><td>DDoS</td><td>1</td><td>8192</td></tr>
+          <tr><td>00:00:00</td><td>Port Scanning</td><td>2</td><td>6200</td></tr>
+          <tr><td>00:00:00</td><td>Brute Force</td><td>4</td><td>100</td></tr>
+          <tr><td>00:00:00</td><td>Worm</td><td>1</td><td>2</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- Chart (Top-Right) -->
+    <div class="chart-container">
+      <canvas id="protocol-chart"></canvas>
+    </div>
+    <!-- Stats (Bottom-Left) -->
+    <div class="stats">
+      <div class="alert-box">
+        <span class="stat-label">Alerts</span>
+        <span class="stat-number" id="alert-count">2140</span>
+      </div>
+      <div class="critical-box">
+        <span class="stat-label">Critical</span>
+        <span class="stat-number" id="critical-count">341</span>
+      </div>
+      <div class="warning-box">
+        <span class="stat-label">Warning</span>
+        <span class="stat-number" id="warning-count">473</span>
+      </div>
+    </div>
+    <!-- Map (Bottom-Right) -->
+    <div class="map-container">
+      <div id="map"></div>
+    </div>
+  </div>
+  <script>
+    // Pie chart
+    const ctx = document.getElementById('protocol-chart').getContext('2d');
+    new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: ['HTTP', 'HTTPS', 'SSHD', 'FTP', 'Telnet'],
+        datasets: [{
+          data: [20, 25, 15, 30, 10],
+          backgroundColor: ['red', 'blue', 'green', 'purple', 'orange']
+        }]
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            color: 'white',
+            formatter: (value, ctx) => {
+              let total = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+              let percentage = ((value / total) * 100).toFixed(1) + "%";
+              return percentage;
+            }
+          }
+        }
+      }
+    });
+    // Map
+    const map = L.map('map').setView([37.7749, -122.4194], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    // Example circles
+    L.circle([37.7749, -122.4194], {radius: 50000})
+      .addTo(map)
+      .bindPopup("USA Attack");
+    L.circle([19.4326, -99.1332], {radius: 30000})
+      .addTo(map)
+      .bindPopup("Mexico Attack");
+  </script>
+</body>
+</html>
