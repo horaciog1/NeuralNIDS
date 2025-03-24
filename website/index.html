@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NeuralNIDS Dashboard</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Leaflet -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      color: #000;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    h1 {
+      font-size: 36px;
+      margin: 20px 0;
+    }
+
+    h1 span {
+      background: linear-gradient(to right, #4b6cb7, #182848);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 20px;
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+
+    .dashboard > div {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease, color 0.3s ease;
+      color: inherit;
+    }
+
+    .dashboard > div:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Threats table */
+    .threats h2 {
+      margin-bottom: 10px;
+    }
+
+    .threats table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .threats th {
+      background-color: #f8f9fa;
+      font-weight: bold;
+      padding: 10px;
+      text-align: left;
+      color: #000;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .threats td {
+      padding: 10px;
+      text-align: left;
+      border-top: 1px solid #ddd;
+      color: #000;
+      transition: color 0.3s ease;
+    }
+
+    .threats tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    .threats tr:hover {
+      background-color: rgba(0,0,0,0.05);
+    }
+
+    /* Chart */
+    .chart-container canvas {
+      width: 300px;
+      height: 300px;
+    }
+
+    /* Stats section (updated for centering and larger boxes) */
+    .stats {
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 40px;
+      padding: 40px;
+    }
+
+    .stats div {
+      width: 250px;
+      height: 150px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+      box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.25);
+      transition: transform 0.3s ease;
+      color: white;
+    }
+
+    .stats div:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    .stat-label {
+      font-size: 24px;
+    }
+
+    .stat-number {
+      font-size: 64px;
+      font-weight: bold;
+    }
+
+    .alert-box {
+      background-color: #e74c3c;
+    }
+
+    .critical-box {
+      background-color: #c0392b;
+    }
+
+    .warning-box {
+      background-color: #e67e22;
+    }
+
+    /* Map styling */
+    #map {
+      width: 100%;
+      height: 350px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+
+    /* Responsive layout */
+    @media (max-width: 768px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto;
+      }
+    }
+
+    /* Dark mode */
+    .dark-mode {
+      background-color: #1e1e1e;
+      color: #f0f0f0;
+    }
+
+    .dark-mode h1 span {
+      background: none !important;
+      -webkit-background-clip: initial !important;
+      -webkit-text-fill-color: white !important;
+      color: white !important;
+    }
+
+    .dark-mode .dashboard > div {
+      background-color: #2c2c2c;
+    }
+
+    .dark-mode .threats table {
+      background-color: #2c2c2c;
+    }
+
+    .dark-mode .threats th {
+      background-color: #3a3a3a;
+      color: #f0f0f0;
+    }
+
+    .dark-mode .threats td {
+      color: #f0f0f0;
+    }
+
+    .dark-mode .threats tr:nth-child(even) {
+      background-color: #333;
+    }
+
+    .dark-mode .threats tr:hover {
+      background-color: #444;
+    }
+
+    .dark-mode canvas {
+      background-color: transparent !important;
+    }
+
+    .toggle-button {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background: #333;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <button class="toggle-button" onclick="toggleDarkMode()">🌗 Toggle Dark Mode</button>
+  <h1>🧠 <span>NeuralNIDS Dashboard</span></h1>
+
+  <div class="dashboard">
+    <!-- Threats Table -->
+    <div class="threats">
+      <h2>Threats</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Type</th>
+            <th>Danger</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody id="threat-table">
+          <tr><td>00:00:00</td><td>DDoS</td><td>1</td><td>8192</td></tr>
+          <tr><td>00:00:00</td><td>Port Scanning</td><td>2</td><td>6200</td></tr>
+          <tr><td>00:00:00</td><td>Brute Force</td><td>4</td><td>100</td></tr>
+          <tr><td>00:00:00</td><td>Worm</td><td>1</td><td>2</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-container">
+      <canvas id="protocol-chart"></canvas>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="alert-box">
+        <span class="stat-label">🚨 Alerts 🚨</span>
+        <span class="stat-number" id="alert-count">2140</span>
+      </div>
+      <div class="critical-box">
+        <span class="stat-label">❕ Critical ❕</span>
+        <span class="stat-number" id="critical-count">341</span>
+      </div>
+      <div class="warning-box">
+        <span class="stat-label">⚠️ Warning ⚠️</span>
+        <span class="stat-number" id="warning-count">473</span>
+      </div>
+    </div>
+
+    <!-- Map -->
+    <div class="map-container">
+      <div id="map"></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    let isDarkMode = false;
+
+    const ctx = document.getElementById('protocol-chart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: ['HTTP', 'HTTPS', 'SSHD', 'FTP', 'Telnet'],
+        datasets: [{
+          data: [20, 25, 15, 30, 10],
+          backgroundColor: ['#e74c3c', '#3498db', '#2ecc71', '#9b59b6', '#f39c12']
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#333',
+              font: {
+                size: 14
+              }
+            }
+          },
+          title: {
+            display: true,
+            text: 'Traffic by Protocol',
+            color: '#000',
+            font: {
+              size: 18
+            }
+          }
+        }
+      }
+    });
+
+    const map = L.map('map').setView([37.7749, -122.4194], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    L.circle([37.7749, -122.4194], {radius: 50000}).addTo(map).bindPopup("USA Attack");
+    L.circle([19.4326, -99.1332], {radius: 30000}).addTo(map).bindPopup("Mexico Attack");
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      isDarkMode = !isDarkMode;
+      chart.options.plugins.title.color = isDarkMode ? '#fff' : '#000';
+      chart.options.plugins.legend.labels.color = isDarkMode ? '#fff' : '#333';
+      chart.update();
+    }
+  </script>
+</body>
+</html>
