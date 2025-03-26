@@ -317,10 +317,10 @@
       }
     });
 
-    const map = L.map('map').setView([37.7749, -122.4194], 2);
+    const map = L.map('map').setView([30.7749, -110.5194], 4);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    L.circle([37.7749, -122.4194], {radius: 50000}).addTo(map).bindPopup("USA Attack");
-    L.circle([19.4326, -99.1332], {radius: 30000}).addTo(map).bindPopup("Mexico Attack");
+    L.circle([37.7749, -122.4194], {radius: 70000}).addTo(map).bindPopup("Attack");
+    L.circle([25.4326, -99.1332], {radius:  50000}).addTo(map).bindPopup("Attack");
 
     function toggleDarkMode() {
       document.body.classList.toggle('dark-mode');
