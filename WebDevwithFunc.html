@@ -123,7 +123,7 @@
     async function loadMap() {
       const map = L.map('map').setView([20, 0], 2);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-      const geoRes = await fetch('http://192.168.1.214:5000/api/locations');
+      const geoRes = await fetch('http://24.242.118.114:52773/api/locations');
       const geoData = await geoRes.json();
       geoData.forEach(loc => {
         L.circle([loc.lat, loc.lng], { radius: 40000 })
