@@ -77,7 +77,7 @@
     }
 
     async function fetchDashboardData() {
-      const alertRes = await fetch('http://192.168.1.214:5000/api/alerts');
+      const alertRes = await fetch('http://24.242.118.114:52773/api/alerts');
       const alerts = await alertRes.json();
 
       const protocolCounts = {};
