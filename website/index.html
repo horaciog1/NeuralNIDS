@@ -275,6 +275,7 @@
     }
 
     async function fetchDashboardData() {
+      const scrollY = window.scrollY;       // Save scroll position
       const alertRes = await fetch('http://192.168.1.214:5000/api/alerts');
       const alerts = await alertRes.json();
 
@@ -334,6 +335,7 @@
           }
         }
       });
+      window.scrollTo({ top: scrollY });      // Restore scroll position
     }
 
     async function loadMap() {
