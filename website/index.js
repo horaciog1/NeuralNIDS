@@ -97,7 +97,7 @@ async function loadMap() {
     mapMarkers.forEach(marker => map.removeLayer(marker));
     mapMarkers = [];
 
-    const geoRes = await fetch('http://192.168.1.214:5000/api/locations');
+    const geoRes = await fetch('http://24.242.118.114:52773/api/locations');
     const geoData = await geoRes.json();
     geoData.forEach(loc => {
         const marker = L.circle([loc.lat, loc.lng], { radius: 40000 })
