@@ -2,6 +2,7 @@ let isDarkMode = false;
 let chart;
 let map;
 let mapMarkers = [];
+let alertActive = false;
 
 function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
@@ -22,7 +23,7 @@ function formatTimestamp(ts) {
 
 async function fetchDashboardData() {
     const scrollY = window.scrollY;       // Save scroll position
-    const alertRes = await fetch('http://192.168.1.214:5000/api/alerts');
+    const alertRes = await fetch('http://24.242.118.114:52773/api/alerts');
     const alerts = await alertRes.json();
 
     const protocolCounts = {};
@@ -35,7 +36,11 @@ async function fetchDashboardData() {
 
     recentAlerts.forEach(alert => {
         alertCount++;
-        if (alert.severity <= 2) critical++;
+        if (alert.severity <= 2) {
+            critical++;
+            invokeAlert();
+            alertActive = true;
+        }
         else warning++;
 
         const proto = alert.protocol || 'Unknown';
@@ -92,7 +97,7 @@ async function loadMap() {
     mapMarkers.forEach(marker => map.removeLayer(marker));
     mapMarkers = [];
 
-    const geoRes = await fetch('http://192.168.1.221:5000/api/locations');
+    const geoRes = await fetch('http://24.242.118.114:52773/api/locations');
     const geoData = await geoRes.json();
     geoData.forEach(loc => {
         const marker = L.circle([loc.lat, loc.lng], { radius: 40000 })
@@ -108,3 +113,10 @@ setInterval(() => {
     fetchDashboardData();
     loadMap();
 }, 5000);
+
+setInterval(() => {
+    if (alertActive) {
+        alertActive = false;
+        clearAlert();
+    }
+}, 5000)

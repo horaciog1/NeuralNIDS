@@ -134,7 +134,8 @@ h1 span {
 }
 
 .alert-box {
-  background-color: #e74c3c;
+  background-color: #929292;
+  flex: 1 1 100%;
 }
 
 .critical-box {
@@ -194,4 +195,30 @@ canvas {
   border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
+}
+
+#alert-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 100;
+  margin-top: 5px;
+}
+
+#message-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#message {
+  color: transparent;
+  font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+}
+
+#page {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }

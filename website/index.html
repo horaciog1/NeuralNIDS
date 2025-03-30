@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html id="page" lang="en">
 
 <head>
   <meta charset="UTF-8" />
@@ -15,9 +15,15 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="index.js"></script>
+  <script src="notification.js"></script>
 </head>
 
 <body>
+  <div id="alert-area">
+    <div id="message-area">
+      <p id="message"> !! Critical Message !!</p>
+    </div>
+  </div>
   <button class="toggle-button" onclick="toggleDarkMode()">🌗 Toggle Dark Mode</button>
   <h1>🧠 <span>NeuralNIDS Dashboard</span></h1>
   <div class="dashboard">
