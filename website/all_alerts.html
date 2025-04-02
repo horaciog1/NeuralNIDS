@@ -9,16 +9,16 @@
   <script src="all_alerts.js" defer></script>
 </head>
 <body>
-  <button class="toggle-button" onclick="toggleDarkMode()">🌗 Toggle Dark Mode</button>
+  <button class="toggle-button" onclick="toggleDarkMode()">🌗 <strong>Toggle Dark Mode</strong></button>
   <h1>📄 <span>All Threat Alerts</span></h1>
 
   <div class="dashboard" style="grid-template-columns: 1fr;">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-      <button onclick="window.location.href='/'" style="padding: 10px 20px; border-radius: 8px; border: none; background: #3498db; color: white; cursor: pointer;">🏠 Back to Dashboard</button>
+      <button class="dashboard-button" onclick="window.location.href='/'">🏠 Back to Dashboard</button>
       <a href="http://10.10.10.100:5000/api/export-alerts" download>
-        <button style="padding: 10px 20px; border-radius: 8px; border: none; background: #2ecc71; color: white; cursor: pointer;">⬇️ Export Alerts CSV</button>
+        <button class="dashboard-button export-button">⬇️ Export Alerts CSV</button>
       </a>
-    </div>
+    </div>  
 
     <div class="threats" style="max-height: 600px; overflow-y: auto; margin-top: 20px;">
       <table>
