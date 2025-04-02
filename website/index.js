@@ -23,7 +23,7 @@ function formatTimestamp(ts) {
 
 async function fetchDashboardData() {
     const scrollY = window.scrollY;       // Save scroll position
-    const alertRes = await fetch('http://24.242.118.114:52773/api/alerts');
+    const alertRes = await fetch('http://24.242.105.141:52773/api/alerts');
     const alerts = await alertRes.json();
 
     const protocolCounts = {};
@@ -39,6 +39,7 @@ async function fetchDashboardData() {
         if (alert.severity <= 2) {
             critical++;
             invokeAlert();
+            sendEmailAlert();
             alertActive = true;
         }
         else warning++;
@@ -97,7 +98,7 @@ async function loadMap() {
     mapMarkers.forEach(marker => map.removeLayer(marker));
     mapMarkers = [];
 
-    const geoRes = await fetch('http://24.242.118.114:52773/api/locations');
+    const geoRes = await fetch('http://24.242.105.141:52773/api/locations');
     const geoData = await geoRes.json();
     geoData.forEach(loc => {
         const marker = L.circle([loc.lat, loc.lng], { radius: 40000 })
@@ -105,6 +106,18 @@ async function loadMap() {
             .bindPopup(`${loc.ip} (${loc.count} hits)`);
         mapMarkers.push(marker);
     });
+}
+
+async function sendEmailAlert() {
+    try {
+        const response = await fetch("http://24.242.105.141:52773/api/send-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ subject: "Alert", body: "An alert has been triggered." })
+        })
+    } catch (error) {
+        console.error("Error sending email:", error);
+    }
 }
 
 fetchDashboardData();
