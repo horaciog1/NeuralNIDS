@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" id="page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Alerts - NeuralNIDS</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+  <script src="all_alerts.js" defer></script>
+</head>
+<body>
+  <button class="toggle-button" onclick="toggleDarkMode()">🌗 <strong>Toggle Dark Mode</strong></button>
+  <h1>📄 <span>All Threat Alerts</span></h1>
+
+  <div class="dashboard" style="grid-template-columns: 1fr;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+      <button class="dashboard-button" onclick="window.location.href='/'">🏠 Back to Dashboard</button>
+      <a href="http://10.10.10.100:5000/api/export-alerts" download>
+        <button class="dashboard-button export-button">⬇️ Export Alerts CSV</button>
+      </a>
+    </div>  
+
+    <div class="threats" style="max-height: 600px; overflow-y: auto; margin-top: 20px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Type</th>
+            <th>Danger</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody id="all-alerts-table"></tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
