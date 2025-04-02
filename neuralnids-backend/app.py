@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
@@ -7,7 +7,7 @@ import os
 from collections import defaultdict, Counter
 import geoip2.database
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static", static_url_path="/")
 CORS(app, resources={r"/api/*": {"origins": "*"}})  # Allow all origins for /api/*
 load_dotenv()
 EVE_LOG = "/var/log/suricata/eve.json"
@@ -124,7 +124,7 @@ def send_email():
 
 @app.route("/")
 def index():
-    return "NeuralNIDS API Running"
+    return send_from_directory('static', 'index.html')
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

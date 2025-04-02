@@ -3,7 +3,7 @@ let chart;
 let map;
 let mapMarkers = [];
 let alertActive = false;
-const BASE_URL = "http://24.242.105.141:52773"; // Change this when you need to change all URLs
+const BASE_URL = "http://10.10.10.100:5000"; // Change this when you need to change all URLs
 
 function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
