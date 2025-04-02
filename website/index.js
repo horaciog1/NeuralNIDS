@@ -3,6 +3,7 @@ let chart;
 let map;
 let mapMarkers = [];
 let alertActive = false;
+const BASE_URL = "http://24.242.105.141:52773"; // Change this when you need to change all URLs
 
 function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
@@ -23,7 +24,7 @@ function formatTimestamp(ts) {
 
 async function fetchDashboardData() {
     const scrollY = window.scrollY;       // Save scroll position
-    const alertRes = await fetch('http://24.242.105.141:52773/api/alerts');
+    const alertRes = await fetch('${BASE_URL}/api/alerts');
     const alerts = await alertRes.json();
 
     const protocolCounts = {};
@@ -98,7 +99,7 @@ async function loadMap() {
     mapMarkers.forEach(marker => map.removeLayer(marker));
     mapMarkers = [];
 
-    const geoRes = await fetch('http://24.242.105.141:52773/api/locations');
+    const geoRes = await fetch('${BASE_URL}/api/locations');
     const geoData = await geoRes.json();
     geoData.forEach(loc => {
         const marker = L.circle([loc.lat, loc.lng], { radius: 40000 })
@@ -110,7 +111,7 @@ async function loadMap() {
 
 async function sendEmailAlert() {
     try {
-        const response = await fetch("http://24.242.105.141:52773/api/send-email", {
+        const response = await fetch("${BASE_URL}/api/send-email", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ subject: "Alert", body: "An alert has been triggered." })
