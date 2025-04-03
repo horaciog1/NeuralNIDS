@@ -62,6 +62,10 @@ async function fetchMLAlerts() {
     }
 }
 
+
+
+
+
 function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
     isDarkMode = !isDarkMode;
