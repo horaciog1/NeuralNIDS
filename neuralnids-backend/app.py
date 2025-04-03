@@ -57,6 +57,11 @@ def load_alerts(limit=200):
 def get_alerts():
     return jsonify(load_alerts())
 
+# go to the view all alerts webpage
+@app.route("/all-alerts")
+def all_alerts():
+    return send_from_directory("static", "all_alerts.html")
+
 
 # define /api/locations endpoint to return IP location data in JSON format
 @app.route("/api/locations")
