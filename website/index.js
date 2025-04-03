@@ -5,6 +5,63 @@ let mapMarkers = [];
 let alertActive = false;
 const BASE_URL = "http://10.10.10.100:5000"; // Change this when you need to change all URLs
 
+let previousMLTimestamps = new Set();  // Keep track of unique timestamps
+
+async function fetchMLAlerts() {
+    try {
+        const res = await fetch(`${BASE_URL}/api/live-alerts`);
+        const alerts = await res.json();
+
+        const mlTable = document.getElementById("ml-alert-table");
+        if (!mlTable) {
+            console.warn("Could not find #ml-alert-table");
+            return;
+        }
+
+        // Filter out previously seen alerts (by timestamp + confidence)
+        const newAlerts = alerts.filter(entry => {
+            const uniqueKey = `${entry.timestamp}_${entry.confidence}`;
+            if (previousMLTimestamps.has(uniqueKey)) {
+                return false;
+            } else {
+                previousMLTimestamps.add(uniqueKey);
+                return true;
+            }
+        });
+
+        // Only show last 10 alerts (clear and re-render)
+        const last10 = Array.from(previousMLTimestamps).slice(-10).reverse();
+        mlTable.innerHTML = "";
+
+        if (last10.length === 0) {
+            const row = document.createElement("tr");
+            row.innerHTML = `<td colspan="3">No new ML alerts detected yet.</td>`;
+            mlTable.appendChild(row);
+            return;
+        }
+
+        last10.forEach(key => {
+            const [timestamp, confidence] = key.split("_");
+            const row = document.createElement("tr");
+            const formattedTime = new Date(timestamp + "Z").toLocaleString(undefined, {
+                year: "numeric", month: "2-digit", day: "2-digit",
+                hour: "2-digit", minute: "2-digit", second: "2-digit",
+                hour12: false
+            });
+
+            row.innerHTML = `
+                <td>${formattedTime}</td>
+                <td>ATTACK</td>
+                <td>${parseFloat(confidence).toFixed(4)}</td>
+            `;
+            mlTable.appendChild(row);
+        });
+
+    } catch (err) {
+        console.error("[x] Error fetching ML alerts:", err);
+    }
+}
+
 function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
     isDarkMode = !isDarkMode;
@@ -121,16 +178,21 @@ async function sendEmailAlert() {
     }
 }
 
-fetchDashboardData();
-loadMap();
-setInterval(() => {
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("✅ DOM ready. Initializing dashboard...");
+
     fetchDashboardData();
     loadMap();
-}, 5000);
+    fetchMLAlerts();
 
-setInterval(() => {
-    if (alertActive) {
-        alertActive = false;
-        clearAlert();
-    }
-}, 5000)
+    setInterval(fetchDashboardData, 5000);
+    setInterval(loadMap, 5000);
+    setInterval(fetchMLAlerts, 5000);
+
+    setInterval(() => {
+        if (alertActive) {
+            alertActive = false;
+            clearAlert();
+        }
+    }, 5000);
+});
