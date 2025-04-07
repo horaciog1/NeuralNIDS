@@ -1,11 +1,16 @@
+from joblib import load
+import numpy as np
+from utils import preprocess_data, engineer_features
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
+from ml_predictor import predict_event
 import json
 import os
 from collections import defaultdict, Counter
 import geoip2.database
+import pandas as pd
 
 app = Flask(__name__, static_folder="static", static_url_path="/")
 CORS(app, resources={r"/api/*": {"origins": "*"}})  # Allow all origins for /api/*
@@ -23,7 +28,7 @@ mail = Mail(app)
 
 
 # This function loads alerts from the Suricata EVE JSON log file
-# and returns a list of dictionaries (JSON Objects) containing 
+# and returns a list of dictionaries (JSON Objects) containing
 # relevant information about each alert.
 def load_alerts(limit=200):
     alerts = []
@@ -56,6 +61,7 @@ def load_alerts(limit=200):
 @app.route("/api/alerts")
 def get_alerts():
     return jsonify(load_alerts())
+
 
 # go to the view all alerts webpage
 @app.route("/all-alerts")
@@ -130,6 +136,68 @@ def send_email():
 @app.route("/")
 def index():
     return send_from_directory('static', 'index.html')
+
+def predict_event(input_data):
+    # Load model and threshold
+    model = load("models/ensemble_stacking_model.joblib")
+    with open("logs/optimal_threshold_stacking.txt") as f:
+        threshold = float(f.read().strip())
+
+    # Convert input to DataFrame
+    df = pd.DataFrame([input_data])
+
+    # Engineer features
+    df = engineer_features(df)
+
+    # Preprocess using selected features
+    X, _, _ = preprocess_data(df, selected_features_file="models/top25_features.txt")
+
+    # Predict
+    proba = model.predict_proba(X)[:, 1][0]
+    prediction = int(proba >= threshold)
+
+    return {
+        "Prediction": prediction,
+        "Confidence": round(proba, 4),
+        "Label": "Attack" if prediction == 1 else "Normal"
+    }
+
+@app.route("/api/predict", methods=["GET", "POST"])
+def predict():
+    if request.method == "GET":
+        return jsonify({"info": "Send a POST request with JSON data to get a prediction."})
+    try:
+        event = request.get_json()
+        if not event:
+            return jsonify({"Error": "No JSON data provided"}), 400
+
+        result = predict_event(event)
+        return jsonify(result), 200
+    except Exception as e:
+        print("Prediction error:", e)
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ml_alerts")
+def get_ml_alerts():
+    enriched_alerts = []
+    try:
+        with open("logs/ml_alerts.jsonl", "r") as f:
+            for line in f.readlines()[-200:]:  # limit to recent alerts
+                enriched_alerts.append(json.loads(line))
+    except Exception as e:
+        print("[!] Could not load ML alerts:", e)
+    return jsonify(enriched_alerts)
+
+@app.route("/api/live-alerts")
+def live_alerts():
+    try:
+        with open("logs/ml_alerts.jsonl", "r") as f:
+            lines = f.readlines()
+            alerts = [json.loads(line.strip()) for line in lines if line.strip()]
+        return jsonify(alerts[-5:])  # only return last 10
+    except Exception as e:
+        print(f"[X] Error loading ML alerts: {e}")
+        return jsonify([]), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
