@@ -251,22 +251,51 @@ canvas {
 
 
 #alert-area {
+  color: transparent; /* hide by default */
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-grow: 100;
-  margin-top: 5px;
+  pointer-events: none;
+  width: 100%;
 }
 
 #message-area {
-  display: flex;
+  display: none; /* Hidden until triggered */
+  background-color: red;
+  border-radius: 10px;
+  padding: 4px 8px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+  min-width: 200px;
+  min-height: 30px;
   justify-content: center;
   align-items: center;
 }
 
 #message {
-  color: transparent;
+  color: transparent; /* hide by default */
   font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+  font-weight: bold;
+  font-size: 14px;
+  transition: color 0.3s ease;
+}
+
+#screen-frame {
+  display: none; /* hidden by default */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+  border: 8px solid red;
+  z-index: 9998; /* behind the alert-area */
+  pointer-events: none;
 }
 
 #page {
