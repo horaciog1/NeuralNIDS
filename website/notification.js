@@ -1,4 +1,5 @@
 function invokeAlert() {
+    const scrollY = window.scrollY;       // Save scroll position
     let alertSound = new Audio("alert.mp3");
     alertSound.volume = 0.30; // Set volume to 30%
 
@@ -20,7 +21,7 @@ function invokeAlert() {
     messageArea.style.width = "200px";
 
     alertText.style.color = "whitesmoke";
-
+    window.scrollTo({ top: scrollY });      // Restore scroll position
 }
 
 function clearAlert() {
