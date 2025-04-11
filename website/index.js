@@ -43,7 +43,7 @@ async function fetchMLAlerts() {
         last10.forEach(key => {
             const [timestamp, confidence] = key.split("_");
             const row = document.createElement("tr");
-            const formattedTime = new Date(timestamp + "Z").toLocaleString(undefined, {
+                const formattedTime = new Date(timestamp).toLocaleString(undefined, {
                 year: "numeric", month: "2-digit", day: "2-digit",
                 hour: "2-digit", minute: "2-digit", second: "2-digit",
                 hour12: false
