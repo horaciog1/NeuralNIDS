@@ -6,6 +6,7 @@ let alertActive = false;
 const BASE_URL = "http://10.10.10.100:5000"; // Change this when you need to change all URLs
 
 let previousMLTimestamps = new Set();  // Keep track of unique timestamps
+let addressedAlerts = [];
 
 async function fetchMLAlerts() {
     try {
@@ -43,7 +44,7 @@ async function fetchMLAlerts() {
         last10.forEach(key => {
             const [timestamp, confidence] = key.split("_");
             const row = document.createElement("tr");
-                const formattedTime = new Date(timestamp).toLocaleString(undefined, {
+            const formattedTime = new Date(timestamp).toLocaleString(undefined, {
                 year: "numeric", month: "2-digit", day: "2-digit",
                 hour: "2-digit", minute: "2-digit", second: "2-digit",
                 hour12: false
@@ -80,6 +81,7 @@ function formatTimestamp(ts) {
 }
 
 async function fetchDashboardData() {
+    let critAlertDetected = false;
     const scrollY = window.scrollY;       // Save scroll position
     const alertRes = await fetch(`${BASE_URL}/api/alerts`);
     const alerts = await alertRes.json();
@@ -96,9 +98,8 @@ async function fetchDashboardData() {
         alertCount++;
         if (alert.severity <= 2) {
             critical++;
-            invokeAlert();
-            sendEmailAlert();
             alertActive = true;
+            critAlertDetected = true;
         }
         else warning++;
 
@@ -110,6 +111,11 @@ async function fetchDashboardData() {
         row.innerHTML = `<td>${formatTimestamp(alert.timestamp)}</td><td>${conciseSig}</td><td>${alert.severity}</td><td>1</td>`;
         table.appendChild(row);
     });
+
+    if (critAlertDetected) {
+        invokeAlert();
+        sendEmailAlert();
+    }
 
     document.getElementById("alert-count").innerText = alerts.length;
     document.getElementById("critical-count").innerText = critical;
@@ -145,6 +151,7 @@ async function fetchDashboardData() {
             }
         }
     });
+    critAlertDetected = false; // Reset after processing
     window.scrollTo({ top: scrollY });      // Restore scroll position
 }
 
