@@ -1,3 +1,6 @@
+import eventlet
+eventlet.monkey_patch()
+
 from joblib import load
 import numpy as np
 from utils import preprocess_data, engineer_features
@@ -6,6 +9,7 @@ from flask_cors import CORS
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
 from ml_predictor import predict_event
+from flask_socketio import SocketIO
 import json
 import os
 from collections import defaultdict, Counter
@@ -25,6 +29,7 @@ app.config["MAIL_USERNAME"] = os.getenv("EMAIL")
 app.config["MAIL_PASSWORD"] = os.getenv("EMAIL_PASSWORD")
 
 mail = Mail(app)
+socket = SocketIO(app, cors_allowed_origins="*")
 
 
 # This function loads alerts from the Suricata EVE JSON log file
@@ -200,4 +205,5 @@ def live_alerts():
         return jsonify([]), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    #app.run(host="0.0.0.0", port=5000, debug=True)
+    socket.run(app, host="0.0.0.0", port=5000, debug=True)
