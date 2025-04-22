@@ -1,6 +1,7 @@
 import eventlet
 eventlet.monkey_patch()
 
+import logwatcher
 from joblib import load
 import numpy as np
 from utils import preprocess_data, engineer_features
@@ -142,6 +143,10 @@ def send_email():
 def index():
     return send_from_directory('static', 'index.html')
 
+
+# --------------------------- ML PREDICTION API START --------------------------- #
+
+
 def predict_event(input_data):
     # Load model and threshold
     model = load("models/ensemble_stacking_model.joblib")
@@ -203,7 +208,24 @@ def live_alerts():
     except Exception as e:
         print(f"[X] Error loading ML alerts: {e}")
         return jsonify([]), 500
+    
+
+# --------------------------- ML PREDICTION API END --------------------------- #
+
+
+    
+# --------------------------- WEBSOCKET API START --------------------------- #
+
+
+@socket.on("connect")
+def handle_connect():
+    print("Client connected")
+
+
+# --------------------------- WEBSOCKET API END --------------------------- #
 
 if __name__ == "__main__":
     #app.run(host="0.0.0.0", port=5000, debug=True)
+    socket.start_background_task(logwatcher.watcher, socket)
     socket.run(app, host="0.0.0.0", port=5000, debug=True)
+    

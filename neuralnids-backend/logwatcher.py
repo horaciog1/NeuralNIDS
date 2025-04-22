@@ -14,7 +14,7 @@ def watcher(socket):
                 # If no new line, wait a bit and check again
                 time.sleep(0.5)
                 continue
-            # Process the line (e.g., send it to a socket or save it to a database)
+            # Process the line
             data = json.loads(line)
             if data.get("event_type") == "alert":
                 # send the alert data through the websocket

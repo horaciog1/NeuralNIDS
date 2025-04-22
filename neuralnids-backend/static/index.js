@@ -1,3 +1,5 @@
+import "https://cdn.socket.io/4.0.0/socket.io.esm.min.js";
+
 let isDarkMode = false;
 let chart;
 let map;
@@ -188,7 +190,28 @@ async function sendEmailAlert() {
 document.addEventListener("DOMContentLoaded", () => {
     console.log("✅ DOM ready. Initializing dashboard...");
 
-    fetchDashboardData();
+
+
+    const socket = io(BASE_URL);
+
+
+    const table = document.getElementById("threat-table");
+
+    socket.on('connect', () => {
+        console.log("✅ Connected to WebSocket server.");
+    });
+
+    socket.on('alert', (data) => {
+
+        console.log("⚠️ Alert received");
+        console.log(data);
+        const conciseSig = data.alert.signature?.split("[")[0]?.trim() || "-";
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${formatTimestamp(data.timestamp)}</td><td>${conciseSig}</td><td>${data.severity}</td><td>1</td>`;
+        table.appendChild(row);
+    })
+
+    //fetchDashboardData();
     loadMap();
     fetchMLAlerts();
 
