@@ -201,14 +201,15 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("✅ Connected to WebSocket server.");
     });
 
-    socket.on('alert', (data) => {
-
-        console.log("⚠️ Alert received");
-        console.log(data);
-        const conciseSig = data.alert.signature?.split("[")[0]?.trim() || "-";
-        const row = document.createElement("tr");
-        row.innerHTML = `<td>${formatTimestamp(data.timestamp)}</td><td>${conciseSig}</td><td>${data.severity}</td><td>1</td>`;
-        table.appendChild(row);
+    socket.on('alert_batch', (batch) => {
+        if (batch.length > 0) {
+            console.log("Alert received");
+            console.log(batch);
+        }
+        // const conciseSig = data.alert.signature?.split("[")[0]?.trim() || "-";
+        // const row = document.createElement("tr");
+        // row.innerHTML = `<td>${formatTimestamp(data.timestamp)}</td><td>${conciseSig}</td><td>${data.severity}</td><td>1</td>`;
+        // table.appendChild(row);
     })
 
     //fetchDashboardData();
