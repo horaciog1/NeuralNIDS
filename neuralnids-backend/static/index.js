@@ -1,5 +1,3 @@
-import "https://cdn.socket.io/4.0.0/socket.io.esm.min.js";
-
 let isDarkMode = false;
 let chart;
 let map;
