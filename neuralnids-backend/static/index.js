@@ -200,8 +200,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     socket.on('alert_batch', (batch) => {
-        if (batch.length > 0) {
-            console.log("Alert received");
+        parsedBatch = JSON.parse(batch);
+        if (Object.keys(parsedBatch).length > 0) {
+            for (const key in parsedBatch) {
+                console.log(parsedBatch[key].length);
+            }
             console.log(batch);
         }
         // const conciseSig = data.alert.signature?.split("[")[0]?.trim() || "-";
@@ -214,7 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadMap();
     fetchMLAlerts();
 
-    setInterval(fetchDashboardData, 5000);
+    //setInterval(fetchDashboardData, 5000);
     setInterval(loadMap, 5000);
     setInterval(fetchMLAlerts, 5000);
 
