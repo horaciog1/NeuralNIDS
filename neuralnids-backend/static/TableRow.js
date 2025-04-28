@@ -8,6 +8,14 @@ export class TableRow {
         const row = document.createElement("tr");
         row.innerHTML = `<td></td><td>${this.signature}</td><td></td><td>${this.alerts.length}</td>`;
 
+        row.addEventListener("click", () => {
+
+            this.alerts.forEach((alert) => {
+                const subRow = document.createElement("tr");
+                subRow.innerHTML = `<td>${formatTimestamp(alert["timestamp"])}</td><td>${alert["signature"]}</td><td>${alert["alert"]["severity"]}</td><td>1</td>`
+            });
+        });
+
         // this.data.forEach(cellData => {
         // const cell = document.createElement('td');
         // cell.textContent = cellData;
@@ -15,4 +23,11 @@ export class TableRow {
         // });
         return row;
     }
+}
+
+function formatTimestamp(ts) {
+    const d = new Date(ts);
+    const date = d.toLocaleDateString("en-US");
+    const time = d.toLocaleTimeString("en-US", { hour12: false });
+    return `${date} ${time}`;
 }

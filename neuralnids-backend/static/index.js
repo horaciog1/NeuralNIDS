@@ -76,12 +76,12 @@ function toggleDarkMode() {
     }
 }
 
-function formatTimestamp(ts) {
-    const d = new Date(ts);
-    const date = d.toLocaleDateString("en-US");
-    const time = d.toLocaleTimeString("en-US", { hour12: false });
-    return `${date} ${time}`;
-}
+// function formatTimestamp(ts) {
+//     const d = new Date(ts);
+//     const date = d.toLocaleDateString("en-US");
+//     const time = d.toLocaleTimeString("en-US", { hour12: false });
+//     return `${date} ${time}`;
+// }
 
 async function fetchDashboardData() {
     let critAlertDetected = false;
