@@ -2,19 +2,22 @@ export class TableRow {
     constructor(signature, alerts) {
         this.signature = signature;
         this.alerts = alerts;
+        this.subRows = [];
     }
 
     render() {
         const row = document.createElement("tr");
         row.innerHTML = `<td></td><td>${this.signature}</td><td></td><td>${this.alerts.length}</td>`;
 
-        row.addEventListener("click", () => {
 
-            this.alerts.forEach((alert) => {
-                const subRow = document.createElement("tr");
-                subRow.innerHTML = `<td>${formatTimestamp(alert["timestamp"])}</td><td>${alert["signature"]}</td><td>${alert["alert"]["severity"]}</td><td>1</td>`
-            });
+
+        this.alerts.forEach((alert) => {
+            const subRow = document.createElement("tr");
+            subRow.innerHTML = `<td>${formatTimestamp(alert["timestamp"])}</td><td>${this.signature}</td><td>${alert["alert"]["severity"]}</td><td>1</td>`
+            subRow.style.backgroundColor = "darkgray";
+            this.subRows.push(subRow);
         });
+
 
         // this.data.forEach(cellData => {
         // const cell = document.createElement('td');

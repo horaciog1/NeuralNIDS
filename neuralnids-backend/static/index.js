@@ -209,20 +209,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 let currentKey = key;
                 console.log(parsedBatch[key].length);
                 let newRow = new TableRow(key, parsedBatch[key]);
-                // const row = document.createElement("tr");
-                // row.innerHTML = `<td></td><td>${key}</td><td></td><td>${parsedBatch[key].length}</td>`;
-                // row.addEventListener("click", () => {
-                //     const alertDetails = parsedBatch[currentKey];
 
-                //     alertDetails.forEach((alert) => {
-                //         const subRow = document.createElement("tr");
-                //         subRow.innerHTML = `<td>${formatTimestamp(alert["timestamp"])}</td><td>${alert["signature"]}</td><td>${alert["alert"]["severity"]}</td><td>1</td>`
-                //         table.insertRow(row.rowIndex + 1);
-                //     });
+                let renderedRow = newRow.render();
 
-                //     console.log("Clicked row:", key);
-                // });
-                table.appendChild(newRow.render());
+                renderedRow.addEventListener("click", () => {
+                    console.log("Clicked row:", newRow.signature);
+                    newRow.subRows.forEach((subRow) => {
+                        let emptyRow = table.insertRow(renderedRow.rowIndex);
+                        emptyRow.innerHTML = subRow.innerHTML;
+                    });
+                });
+                table.appendChild(renderedRow);
             }
             console.log(batch);
         }
