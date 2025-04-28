@@ -1,3 +1,6 @@
+import { invokeAlert, clearAlert } from "./notification.js";
+import { TableRow } from "./TableRow.js";
+
 let isDarkMode = false;
 let chart;
 let map;
@@ -200,10 +203,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     socket.on('alert_batch', (batch) => {
-        parsedBatch = JSON.parse(batch);
+        let parsedBatch = JSON.parse(batch);
         if (Object.keys(parsedBatch).length > 0) {
             for (const key in parsedBatch) {
+                let currentKey = key;
                 console.log(parsedBatch[key].length);
+                let newRow = new TableRow(key, parsedBatch[key]);
+                // const row = document.createElement("tr");
+                // row.innerHTML = `<td></td><td>${key}</td><td></td><td>${parsedBatch[key].length}</td>`;
+                // row.addEventListener("click", () => {
+                //     const alertDetails = parsedBatch[currentKey];
+
+                //     alertDetails.forEach((alert) => {
+                //         const subRow = document.createElement("tr");
+                //         subRow.innerHTML = `<td>${formatTimestamp(alert["timestamp"])}</td><td>${alert["signature"]}</td><td>${alert["alert"]["severity"]}</td><td>1</td>`
+                //         table.insertRow(row.rowIndex + 1);
+                //     });
+
+                //     console.log("Clicked row:", key);
+                // });
+                table.appendChild(newRow.render());
             }
             console.log(batch);
         }

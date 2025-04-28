@@ -1,4 +1,4 @@
-function invokeAlert() {
+export function invokeAlert() {
     const scrollY = window.scrollY;
     let alertSound = new Audio("alert.mp3");
     alertSound.volume = 0.30;
@@ -16,7 +16,7 @@ function invokeAlert() {
     window.scrollTo({ top: scrollY });
 }
 
-function clearAlert() {
+export function clearAlert() {
     let frame = document.getElementById("screen-frame");
     let messageArea = document.getElementById("message-area");
     let alertText = document.getElementById("message");
