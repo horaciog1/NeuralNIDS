@@ -3,6 +3,7 @@ export class TableRow {
         this.signature = signature;
         this.alerts = alerts;
         this.subRows = [];
+        this.expanded = false;
     }
 
     render() {

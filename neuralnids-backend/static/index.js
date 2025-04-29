@@ -214,10 +214,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 renderedRow.addEventListener("click", () => {
                     console.log("Clicked row:", newRow.signature);
-                    newRow.subRows.forEach((subRow) => {
-                        let emptyRow = table.insertRow(renderedRow.rowIndex);
-                        emptyRow.innerHTML = subRow.innerHTML;
-                    });
+                    if (newRow.expanded) {
+                        for (let i = (renderedRow.rowIndex + newRow.subRows.length) - 1; i > renderedRow.rowIndex - 1; i--) {
+                            table.deleteRow(i);
+                        }
+                        // newRow.subRows.forEach((subRow) => {
+                        //     table.deleteRow(subRow.rowIndex);
+                        // });
+                        newRow.expanded = false;
+                    } else {
+                        newRow.subRows.forEach((subRow) => {
+                            let emptyRow = table.insertRow(renderedRow.rowIndex);
+                            emptyRow.innerHTML = subRow.innerHTML;
+                            console.log(emptyRow.rowIndex);
+                            newRow.expanded = true;
+                        });
+                    }
                 });
                 table.appendChild(renderedRow);
             }
