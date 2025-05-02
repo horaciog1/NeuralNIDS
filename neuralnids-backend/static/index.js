@@ -241,6 +241,13 @@ document.addEventListener("DOMContentLoaded", () => {
         // table.appendChild(row);
     })
 
+    // setInterval(() => {
+    //     invokeAlert();
+    //     setTimeout(() => {
+    //         clearAlert();
+    //     }, 500);
+    // }, 1000);
+
     //fetchDashboardData();
     loadMap();
     fetchMLAlerts();
