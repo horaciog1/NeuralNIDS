@@ -91,6 +91,10 @@ h1 span {
   background-color: #555;
 }
 
+.threats .subRow {
+  background-color: dimgray;
+}
+
 .chart-container canvas {
   width: 300px;
   height: 300px;

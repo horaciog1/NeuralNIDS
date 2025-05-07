@@ -215,38 +215,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 renderedRow.addEventListener("click", () => {
                     console.log("Clicked row:", newRow.signature);
                     if (newRow.expanded) {
-                        for (let i = (renderedRow.rowIndex + newRow.subRows.length) - 1; i > renderedRow.rowIndex - 1; i--) {
-                            table.deleteRow(i);
-                        }
-                        // newRow.subRows.forEach((subRow) => {
-                        //     table.deleteRow(subRow.rowIndex);
-                        // });
+                        table.deleteRow(renderedRow.rowIndex);
                         newRow.expanded = false;
                     } else {
-                        newRow.subRows.forEach((subRow) => {
-                            let emptyRow = table.insertRow(renderedRow.rowIndex);
-                            emptyRow.innerHTML = subRow.innerHTML;
-                            console.log(emptyRow.rowIndex);
-                            newRow.expanded = true;
-                        });
+                        let emptyRow = table.insertRow(renderedRow.rowIndex);
+                        emptyRow.innerHTML = `<td colspan="4">${newRow.subTable.outerHTML}</td>`;
+                        newRow.expanded = true;
                     }
                 });
                 table.appendChild(renderedRow);
             }
             console.log(batch);
         }
-        // const conciseSig = data.alert.signature?.split("[")[0]?.trim() || "-";
-        // const row = document.createElement("tr");
-        // row.innerHTML = `<td>${formatTimestamp(data.timestamp)}</td><td>${conciseSig}</td><td>${data.severity}</td><td>1</td>`;
-        // table.appendChild(row);
     })
-
-    // setInterval(() => {
-    //     invokeAlert();
-    //     setTimeout(() => {
-    //         clearAlert();
-    //     }, 500);
-    // }, 1000);
 
     //fetchDashboardData();
     loadMap();
