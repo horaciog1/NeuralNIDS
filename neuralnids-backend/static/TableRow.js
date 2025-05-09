@@ -7,7 +7,7 @@ export class TableRow {
         this.subTable = document.createElement("table");
     }
 
-    render() {
+    render(table) {
         const row = document.createElement("tr");
         row.innerHTML = `<td>${this.signature}</td><td>${this.alerts.length}</td>`;
 
@@ -20,6 +20,19 @@ export class TableRow {
             subRow.innerHTML = `<td>${formatTimestamp(alert["timestamp"])}</td><td>${alert["src_ip"]}</td><td>${alert["alert"]["severity"]}</td>`;
             this.subTable.appendChild(subRow);
         });
+
+        row.addEventListener("click", () => {
+            console.log("Clicked row:", this.signature);
+            if (this.expanded) {
+                table.deleteRow(row.rowIndex);
+                this.expanded = false;
+            } else {
+                let emptyRow = table.insertRow(row.rowIndex);
+                emptyRow.innerHTML = `<td colspan="4">${this.subTable.outerHTML}</td>`;
+                this.expanded = true;
+            }
+        });
+
         return row;
     }
 }

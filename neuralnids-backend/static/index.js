@@ -7,6 +7,7 @@ let map;
 let mapMarkers = [];
 let alertActive = false;
 const BASE_URL = "http://10.10.10.100:5000"; // Change this when you need to change all URLs
+const socket = io(BASE_URL);
 
 let previousMLTimestamps = new Set();  // Keep track of unique timestamps
 let addressedAlerts = [];
@@ -191,43 +192,9 @@ async function sendEmailAlert() {
 document.addEventListener("DOMContentLoaded", () => {
     console.log("✅ DOM ready. Initializing dashboard...");
 
-
-
-    const socket = io(BASE_URL);
-
-
-    const table = document.getElementById("threat-table");
-
     socket.on('connect', () => {
         console.log("✅ Connected to WebSocket server.");
     });
-
-    socket.on('alert_batch', (batch) => {
-        let parsedBatch = JSON.parse(batch);
-        if (Object.keys(parsedBatch).length > 0) {
-            for (const key in parsedBatch) {
-                let currentKey = key;
-                console.log(parsedBatch[key].length);
-                let newRow = new TableRow(key, parsedBatch[key]);
-
-                let renderedRow = newRow.render();
-
-                renderedRow.addEventListener("click", () => {
-                    console.log("Clicked row:", newRow.signature);
-                    if (newRow.expanded) {
-                        table.deleteRow(renderedRow.rowIndex);
-                        newRow.expanded = false;
-                    } else {
-                        let emptyRow = table.insertRow(renderedRow.rowIndex);
-                        emptyRow.innerHTML = `<td colspan="4">${newRow.subTable.outerHTML}</td>`;
-                        newRow.expanded = true;
-                    }
-                });
-                table.appendChild(renderedRow);
-            }
-            console.log(batch);
-        }
-    })
 
     //fetchDashboardData();
     loadMap();
@@ -243,4 +210,19 @@ document.addEventListener("DOMContentLoaded", () => {
             clearAlert();
         }
     }, 5000);
+});
+
+socket.on('alert_batch', (batch) => {
+    const table = document.getElementById("threat-table");
+    let parsedBatch = JSON.parse(batch);
+    if (Object.keys(parsedBatch).length > 0) {
+        for (const key in parsedBatch) {
+            let currentKey = key;
+            console.log(parsedBatch[key].length);
+            let newRow = new TableRow(key, parsedBatch[key]);
+            let renderedRow = newRow.render(table);
+            table.appendChild(renderedRow);
+        }
+        console.log(batch);
+    }
 });
