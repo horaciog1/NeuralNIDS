@@ -187,12 +187,16 @@ async function loadMap() {
     });
 }
 
-async function sendEmailAlert() {
+async function sendEmailAlert(alerts) {
+    let alertString = "";
+    alerts.forEach(alert => {
+        alertString += `\n${alert.timestamp} - ${alert["src_ip"]} - ${alert.signature} - ${alert.severity}`;
+    });
     try {
         const response = await fetch(`${BASE_URL}/api/send-email`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ subject: "Alert", body: "An alert has been triggered." })
+            body: JSON.stringify({ subject: "Alert", body: alertString })
         })
     } catch (error) {
         console.error("Error sending email:", error);
@@ -235,8 +239,12 @@ socket.on('alert_batch', (batch) => {
     const table = document.getElementById("threat-table");
     let parsedBatch = JSON.parse(batch);
     if (Object.keys(parsedBatch).length > 0) {
+        invokeAlert();
+        alertActive = true;
         for (const key in parsedBatch) {
             let individualAlerts = parsedBatch[key];
+            //sendEmailAlert(individualAlerts);
+
             let newRow = new TableRow(key, individualAlerts);
             let renderedRow = newRow.render(table);
             table.appendChild(renderedRow);
@@ -253,7 +261,6 @@ socket.on('alert_batch', (batch) => {
                 protocolCounts[proto] = (protocolCounts[proto] || 0) + 1;
             });
         }
-
 
         document.getElementById("alert-count").innerText = alertCount;
         document.getElementById("critical-count").innerText = critical;
@@ -290,6 +297,7 @@ socket.on('alert_batch', (batch) => {
                 }
             }
         });
+
 
 
         console.log(batch);
