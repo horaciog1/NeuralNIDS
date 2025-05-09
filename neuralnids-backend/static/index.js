@@ -6,11 +6,13 @@ let chart;
 let map;
 let mapMarkers = [];
 let alertActive = false;
+
 const BASE_URL = "http://10.10.10.100:5000"; // Change this when you need to change all URLs
 const socket = io(BASE_URL);
+let alertCount = 0, critical = 0, warning = 0;
+let protocolCounts = {};
 
 let previousMLTimestamps = new Set();  // Keep track of unique timestamps
-let addressedAlerts = [];
 
 async function fetchMLAlerts() {
     try {
@@ -68,14 +70,22 @@ async function fetchMLAlerts() {
 }
 
 function toggleDarkMode() {
-    document.body.classList.toggle('dark-mode');
-    isDarkMode = !isDarkMode;
+    // Toggle the class and persist the choice
+    const isDark = document.body.classList.toggle('dark-mode');
+    localStorage.setItem('dark-mode', isDark ? 'enabled' : 'disabled');
+
+    // Keep chart in sync
+    isDarkMode = isDark;
     if (chart) {
-        chart.options.plugins.title.color = isDarkMode ? '#fff' : '#000';
-        chart.options.plugins.legend.labels.color = isDarkMode ? '#fff' : '#333';
+        chart.options.plugins.title.color = isDark ? '#fff' : '#000';
+        chart.options.plugins.legend.labels.color = isDark ? '#fff' : '#333';
         chart.update();
     }
 }
+
+// Expose globally
+window.toggleDarkMode = toggleDarkMode;
+
 
 // function formatTimestamp(ts) {
 //     const d = new Date(ts);
@@ -98,32 +108,32 @@ async function fetchDashboardData() {
 
     const recentAlerts = alerts.slice(-8).reverse();
 
-    recentAlerts.forEach(alert => {
-        alertCount++;
-        if (alert.severity <= 2) {
-            critical++;
-            alertActive = true;
-            critAlertDetected = true;
-        }
-        else warning++;
+    // recentAlerts.forEach(alert => {
+    //     // alertCount++;
+    //     // if (alert.severity <= 2) {
+    //     //     critical++;
+    //     //     alertActive = true;
+    //     //     critAlertDetected = true;
+    //     // }
+    //     // else warning++;
 
-        const proto = alert.protocol || 'Unknown';
-        protocolCounts[proto] = (protocolCounts[proto] || 0) + 1;
+    //     // const proto = alert.protocol || 'Unknown';
+    //     // protocolCounts[proto] = (protocolCounts[proto] || 0) + 1;
 
-        const conciseSig = alert.signature?.split("[")[0]?.trim() || "-";
-        const row = document.createElement("tr");
-        row.innerHTML = `<td>${formatTimestamp(alert.timestamp)}</td><td>${conciseSig}</td><td>${alert.severity}</td><td>1</td>`;
-        table.appendChild(row);
-    });
+    //     // const conciseSig = alert.signature?.split("[")[0]?.trim() || "-";
+    //     // const row = document.createElement("tr");
+    //     // row.innerHTML = `<td>${formatTimestamp(alert.timestamp)}</td><td>${conciseSig}</td><td>${alert.severity}</td><td>1</td>`;
+    //     // table.appendChild(row);
+    // });
 
     if (critAlertDetected) {
         invokeAlert();
         sendEmailAlert();
     }
 
-    document.getElementById("alert-count").innerText = alerts.length;
-    document.getElementById("critical-count").innerText = critical;
-    document.getElementById("warning-count").innerText = warning;
+    // document.getElementById("alert-count").innerText = alerts.length;
+    // document.getElementById("critical-count").innerText = critical;
+    // document.getElementById("warning-count").innerText = warning;
 
     if (chart) chart.destroy();
     const ctx = document.getElementById('protocol-chart').getContext('2d');
@@ -177,12 +187,16 @@ async function loadMap() {
     });
 }
 
-async function sendEmailAlert() {
+async function sendEmailAlert(alerts) {
+    let alertString = "";
+    alerts.forEach(alert => {
+        alertString += `\n${alert.timestamp} - ${alert["src_ip"]} - ${alert.signature} - ${alert.severity}`;
+    });
     try {
         const response = await fetch(`${BASE_URL}/api/send-email`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ subject: "Alert", body: "An alert has been triggered." })
+            body: JSON.stringify({ subject: "Alert", body: alertString })
         })
     } catch (error) {
         console.error("Error sending email:", error);
@@ -190,11 +204,20 @@ async function sendEmailAlert() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+
+    // load dark-mode preference
+    if (localStorage.getItem("dark-mode") === "enabled") {
+        document.body.classList.add("dark-mode");
+        isDarkMode = true;
+    }
+
     console.log("✅ DOM ready. Initializing dashboard...");
 
     socket.on('connect', () => {
         console.log("✅ Connected to WebSocket server.");
     });
+
+    protocolCounts = {};
 
     //fetchDashboardData();
     loadMap();
@@ -216,13 +239,67 @@ socket.on('alert_batch', (batch) => {
     const table = document.getElementById("threat-table");
     let parsedBatch = JSON.parse(batch);
     if (Object.keys(parsedBatch).length > 0) {
+        invokeAlert();
+        alertActive = true;
         for (const key in parsedBatch) {
-            let currentKey = key;
-            console.log(parsedBatch[key].length);
-            let newRow = new TableRow(key, parsedBatch[key]);
+            let individualAlerts = parsedBatch[key];
+            //sendEmailAlert(individualAlerts);
+
+            let newRow = new TableRow(key, individualAlerts);
             let renderedRow = newRow.render(table);
             table.appendChild(renderedRow);
+
+            individualAlerts.forEach(alert => {
+                console.log(alert);
+                alertCount++;
+                if (alert["alert"]["severity"] <= 2) {
+                    critical++;
+                } else {
+                    warning++;
+                }
+                const proto = alert["app_proto"] || 'Unknown';
+                protocolCounts[proto] = (protocolCounts[proto] || 0) + 1;
+            });
         }
+
+        document.getElementById("alert-count").innerText = alertCount;
+        document.getElementById("critical-count").innerText = critical;
+        document.getElementById("warning-count").innerText = warning;
+
+
+        if (chart) chart.destroy();
+        const ctx = document.getElementById('protocol-chart').getContext('2d');
+        chart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(protocolCounts),
+                datasets: [{
+                    data: Object.values(protocolCounts),
+                    backgroundColor: ['#e74c3c', '#3498db', '#2ecc71', '#9b59b6', '#f39c12']
+                }]
+            },
+            options: {
+                animation: false,
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: isDarkMode ? '#fff' : '#333'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Traffic by Protocol',
+                        color: isDarkMode ? '#fff' : '#000',
+                        font: { size: 22 }
+                    }
+                }
+            }
+        });
+
+
+
         console.log(batch);
     }
 });
