@@ -1,9 +1,13 @@
+import { invokeAlert, clearAlert } from "./notification.js";
+import { TableRow } from "./TableRow.js";
+
 let isDarkMode = false;
 let chart;
 let map;
 let mapMarkers = [];
 let alertActive = false;
 const BASE_URL = "http://10.10.10.100:5000"; // Change this when you need to change all URLs
+const socket = io(BASE_URL);
 
 let previousMLTimestamps = new Set();  // Keep track of unique timestamps
 let addressedAlerts = [];
@@ -73,12 +77,12 @@ function toggleDarkMode() {
     }
 }
 
-function formatTimestamp(ts) {
-    const d = new Date(ts);
-    const date = d.toLocaleDateString("en-US");
-    const time = d.toLocaleTimeString("en-US", { hour12: false });
-    return `${date} ${time}`;
-}
+// function formatTimestamp(ts) {
+//     const d = new Date(ts);
+//     const date = d.toLocaleDateString("en-US");
+//     const time = d.toLocaleTimeString("en-US", { hour12: false });
+//     return `${date} ${time}`;
+// }
 
 async function fetchDashboardData() {
     let critAlertDetected = false;
@@ -188,11 +192,15 @@ async function sendEmailAlert() {
 document.addEventListener("DOMContentLoaded", () => {
     console.log("✅ DOM ready. Initializing dashboard...");
 
-    fetchDashboardData();
+    socket.on('connect', () => {
+        console.log("✅ Connected to WebSocket server.");
+    });
+
+    //fetchDashboardData();
     loadMap();
     fetchMLAlerts();
 
-    setInterval(fetchDashboardData, 5000);
+    //setInterval(fetchDashboardData, 5000);
     setInterval(loadMap, 5000);
     setInterval(fetchMLAlerts, 5000);
 
@@ -202,4 +210,19 @@ document.addEventListener("DOMContentLoaded", () => {
             clearAlert();
         }
     }, 5000);
+});
+
+socket.on('alert_batch', (batch) => {
+    const table = document.getElementById("threat-table");
+    let parsedBatch = JSON.parse(batch);
+    if (Object.keys(parsedBatch).length > 0) {
+        for (const key in parsedBatch) {
+            let currentKey = key;
+            console.log(parsedBatch[key].length);
+            let newRow = new TableRow(key, parsedBatch[key]);
+            let renderedRow = newRow.render(table);
+            table.appendChild(renderedRow);
+        }
+        console.log(batch);
+    }
 });
