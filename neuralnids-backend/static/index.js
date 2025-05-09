@@ -77,7 +77,7 @@ function toggleDarkMode() {
     // Keep chart in sync
     isDarkMode = isDark;
     if (chart) {
-        chart.options.plugins.title.color  = isDark ? '#fff' : '#000';
+        chart.options.plugins.title.color = isDark ? '#fff' : '#000';
         chart.options.plugins.legend.labels.color = isDark ? '#fff' : '#333';
         chart.update();
     }
@@ -244,7 +244,7 @@ socket.on('alert_batch', (batch) => {
             individualAlerts.forEach(alert => {
                 console.log(alert);
                 alertCount++;
-                if (alert["severity"] <= 2) {
+                if (alert["alert"]["severity"] <= 2) {
                     critical++;
                 } else {
                     warning++;
