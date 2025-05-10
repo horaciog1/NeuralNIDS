@@ -1,3 +1,6 @@
+/**
+ * Represents a table row that contains a signature, alerts, and expandable details.
+ */
 export class TableRow {
     constructor(signature, alerts) {
         this.signature = signature;
@@ -37,6 +40,12 @@ export class TableRow {
     }
 }
 
+/**
+ * Formats a given timestamp into a human-readable date and time string.
+ *
+ * @param {number|string} ts - The timestamp to format. It can be a number representing milliseconds since the UNIX epoch or a string in a valid date-time format.
+ * @return {string} A string representing the formatted date and time in "MM/DD/YYYY HH:mm:ss" format.
+ */
 function formatTimestamp(ts) {
     const d = new Date(ts);
     const date = d.toLocaleDateString("en-US");

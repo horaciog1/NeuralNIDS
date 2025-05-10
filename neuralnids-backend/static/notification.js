@@ -1,3 +1,9 @@
+
+/**
+ * Invokes an alert by playing a sound, displaying an alert message, and ensuring the scroll position remains unchanged.
+ *
+ * @return {void} This function does not return any value.
+ */
 export function invokeAlert() {
     const scrollY = window.scrollY;
     let alertSound = new Audio("alert.mp3");
@@ -16,6 +22,11 @@ export function invokeAlert() {
     window.scrollTo({ top: scrollY });
 }
 
+/**
+ * Clears the alert by hiding the relevant elements and resetting styles.
+ *
+ * @return {void} This method does not return a value.
+ */
 export function clearAlert() {
     let frame = document.getElementById("screen-frame");
     let messageArea = document.getElementById("message-area");

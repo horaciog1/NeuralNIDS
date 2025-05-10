@@ -108,8 +108,29 @@ def get_locations():
     return jsonify(geo_data)
 
 
+
 @app.route("/api/send-email", methods=["POST", "OPTIONS"])
 def send_email():
+    """
+    Handles the sending of emails via a POST request, including support for
+    preflight OPTIONS requests. The endpoint is designed to receive email
+    data as JSON input, validate it, and send the email using the configured
+    mail server. The function ensures proper CORS headers for client-server
+    interactions.
+
+    Parameters:
+        None
+
+    Returns:
+        Response: JSON response indicating the success or failure of the email
+        sending operation. Includes status codes:
+            - 200 for successful email delivery
+            - 400 for invalid input
+            - 500 for server-side errors
+
+    Raises:
+        None
+    """
     if request.method == "OPTIONS":
         # Preflight request handling
         response = app.make_default_options_response()
@@ -141,6 +162,18 @@ def send_email():
 
 @app.route("/")
 def index():
+    """
+    Handles the root URL endpoint and serves the index.html file from the static directory.
+
+    This route is typically used to deliver the main entry point of a web application, serving
+    the frontend HTML from the specified directory.
+
+    Parameters:
+        None
+
+    Returns:
+        Response: The HTTP response object that sends the `index.html` file from the `static` directory.
+    """
     return send_from_directory('static', 'index.html')
 
 
@@ -148,6 +181,28 @@ def index():
 
 
 def predict_event(input_data):
+    """
+    Predict the occurrence of an event based on input data using a pre-trained model.
+
+    This function utilizes a pre-trained ensemble stacking model to predict whether an
+    event is an "Attack" or "Normal" based on the given input data. It applies a series
+    of steps including feature engineering, data preprocessing, and prediction threshold
+    comparison to generate the result. The output includes the final prediction, its
+    confidence score, and the corresponding label.
+
+    Parameters:
+        input_data (dict): Dictionary containing the input data for prediction. Each
+        key within the dictionary represents a feature used during model training.
+
+    Returns:
+        dict: A dictionary containing the following keys:
+            - "Prediction" (int): The predicted class label, where 1 represents "Attack"
+              and 0 represents "Normal".
+            - "Confidence" (float): The confidence score of the prediction within the range
+              [0, 1], rounded to four decimal places.
+            - "Label" (str): The corresponding label for the prediction, either "Attack"
+              or "Normal".
+    """
     # Load model and threshold
     model = load("models/ensemble_stacking_model.joblib")
     with open("logs/optimal_threshold_stacking.txt") as f:
@@ -174,6 +229,21 @@ def predict_event(input_data):
 
 @app.route("/api/predict", methods=["GET", "POST"])
 def predict():
+    """
+    Handles prediction requests via HTTP GET and POST methods. This endpoint can be
+    used to fetch information or to send a JSON object for prediction purposes.
+
+    Parameters:
+        None
+
+    Returns:
+        dict: JSON response. For GET, returns informational message. For POST,
+        returns the prediction results or relevant error messages.
+
+    Raises:
+        Exception: Raises an error with a status of 500 if there is an unhandled
+        exception during the prediction process.
+    """
     if request.method == "GET":
         return jsonify({"info": "Send a POST request with JSON data to get a prediction."})
     try:
@@ -189,6 +259,23 @@ def predict():
 
 @app.route("/api/ml_alerts")
 def get_ml_alerts():
+    """
+    Handles the retrieval of machine learning alerts by reading
+    and processing a JSONL file containing recent alerts. The
+    function extracts the most recent 200 alerts and converts
+    their JSON representation into Python objects before
+    returning them as a JSON response.
+
+    Raises
+    ------
+    Exception
+        If there is an error opening or reading the file containing ML alerts.
+
+    Returns
+    -------
+    flask.Response
+        A JSON response containing a list of the most recent ML alerts.
+    """
     enriched_alerts = []
     try:
         with open("logs/ml_alerts.jsonl", "r") as f:
@@ -200,6 +287,17 @@ def get_ml_alerts():
 
 @app.route("/api/live-alerts")
 def live_alerts():
+    """
+    Fetches the last 5 live machine learning alert logs from a JSON Lines (JSONL) file and returns them as a JSON response.
+
+    This function reads data from a local JSONL file `logs/ml_alerts.jsonl` and extracts up to 5 most recent
+    alerts. If any error occurs during the file reading or processing, the function will log the error message
+    and return an empty JSON array with a status code of 500.
+
+    Returns:
+        JSON response containing an array of up to 5 most recent alerts. If an error occurs, an empty
+        JSON array is returned along with a HTTP 500 status code.
+    """
     try:
         with open("logs/ml_alerts.jsonl", "r") as f:
             lines = f.readlines()
@@ -219,6 +317,15 @@ def live_alerts():
 
 @socket.on("connect")
 def handle_connect():
+    """
+    This function handles the "connect" event which is triggered when a client successfully establishes a connection to the server.
+
+    Returns
+    -------
+    None
+        Does not return any value.
+
+    """
     print("Client connected")
 
 
